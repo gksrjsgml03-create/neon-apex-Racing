@@ -54,6 +54,7 @@ async function createWindow() {
       characters: document.querySelectorAll('[data-character]').length,
       karts: document.querySelectorAll('[data-kart]').length,
       modeSelection: !!document.getElementById('single-mode') && !!document.getElementById('multi-mode'),
+      internetEntry: !!document.getElementById('internet-host'),
       musicPlaying: document.documentElement.dataset.musicPlaying === 'true',
       previewRemoved: !document.getElementById('sound-test'),
       boostAboveGauge: document.getElementById('boost-inventory').nextElementSibling?.classList.contains('drift-meter'),
@@ -72,7 +73,7 @@ async function createWindow() {
     }
     const ok = result.ready && result.canvasWidth > 0 && result.controls.includes('CTRL') && result.courses === 5 && result.renderer === 'webgl-3d' && result.characters === 6 && result.karts === 5 && result.graphicsError === 0 && result.modeSelection && result.musicPlaying && result.previewRemoved && result.boostAboveGauge && (!sound || Object.values(sound).every(layer => layer.audibleSignal));
     require('node:fs').writeFileSync(join(app.getPath('temp'), 'neon-apex-smoke.json'), JSON.stringify({ ok:ok&&online!==false, ...result, sound, online }, null, 2));
-    app.exit(ok && online!==false ? 0 : 1);
+    app.exit(ok && online!==false && result.internetEntry ? 0 : 1);
   }
 }
 

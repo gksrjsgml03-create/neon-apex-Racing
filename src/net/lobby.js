@@ -10,6 +10,8 @@ export class OnlineLobby {
     });
     try{$('server-address').value=localStorage.getItem('apex-server')||'ws://127.0.0.1:8787';$('player-name').value=localStorage.getItem('apex-name')||'레이서';}catch{}
     $('local-host').hidden=!window.desktop;
+    this.loadPublicServer();
+    $('internet-host').onclick=()=>this.enter('create',false,true);
     $('local-host').onclick=()=>this.enter('create',true);
     $('create-room').onclick=()=>this.enter('create');
     $('join-room').onclick=()=>this.enter('join');
@@ -24,11 +26,24 @@ export class OnlineLobby {
     $('invite-address').onchange=()=>this.updateInvite();
   }
   status(text){$('online-status').textContent=text;$('room-note').textContent=text;}
-  busy(value){for(const id of ['local-host','create-room','join-room'])$(id).disabled=value;}
-  async enter(type,local=false){
+  busy(value){for(const id of ['internet-host','local-host','create-room','join-room'])$(id).disabled=value;}
+  async loadPublicServer(){
+    const apply=config=>{
+      this.publicEndpoint=null;
+      try{if(config?.endpoint){const endpoint=serverURL(config.endpoint);if(!endpoint.startsWith('wss://'))throw new Error();this.publicEndpoint=endpoint;}}catch{}
+      $('public-server-note').textContent=config?.notice||'공개 서버 주소를 직접 입력해 접속할 수 있습니다.';
+    };
+    try{apply(await (await fetch(new URL('../../public-server.json',import.meta.url))).json());}catch{}
+    try{
+      const response=await fetch('https://raw.githubusercontent.com/gksrjsgml03-create/neon-apex-Racing/main/public-server.json',{cache:'no-store',signal:AbortSignal.timeout(4000)});
+      if(response.ok)apply(await response.json());
+    }catch{}
+  }
+  async enter(type,local=false,internet=false){
     this.busy(true);this.status('서버에 연결 중입니다…');
     try{
       let endpoint=$('server-address').value,code=$('room-code').value.trim().toUpperCase();this.localAddresses=null;
+      if(internet){if(!this.publicEndpoint)throw new Error('공개 서버를 준비 중입니다. 잠시 후 다시 시도하거나 서버 주소를 입력해 주세요.');endpoint=this.publicEndpoint;}
       if(type==='join'&&$('invite-input').value.trim()){
         const invite=readInvite($('invite-input').value);endpoint=invite.endpoint;code=invite.code;
       }

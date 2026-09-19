@@ -169,9 +169,11 @@ function frame(now) {
     if(mode==='multi'){
       sendElapsed+=dt;
       if(sendElapsed>=1/30){sendElapsed=0;online.client.input(state==='racing'?drivingInput(keys):{});}
-      $('net-hud').textContent=`ONLINE · ${online.client.latency} ms · ${latestPlayers.length}명`;
+      race.updatePresentation(now/1000,dt);
+      $('net-hud').textContent=`ONLINE · ${online.client.latency} ms · ${latestPlayers.length}명${race.snapshots.stale(now/1000)?' · 연결 지연':''}`;
     }
-    renderer.draw(race); renderer.map($('map'),race); document.body.classList.toggle('flux',race.flux); hud();
+    const displayRace=mode==='multi'?race.presentation():race;
+    renderer.draw(displayRace); renderer.map($('map'),displayRace); document.body.classList.toggle('flux',race.flux); hud();
   }
   audio.update(race,state);
   document.documentElement.dataset.musicPlaying=String(!!audio.ctx&&audio.ctx.state==='running'&&audio.enabled&&audio.musicActive);
@@ -211,7 +213,7 @@ online=new OnlineLobby({
   },
   snapshot(msg){
     if(msg.round!==onlineRound||!(race instanceof OnlineRace))return;
-    latestPlayers=msg.players;race.applySnapshot(msg.players,online.client.id);
+    latestPlayers=msg.players;race.applySnapshot(msg.players,online.client.id,msg.tick,performance.now()/1000);
     $('online-ranking').replaceChildren();
     for(const p of [...msg.players].sort((a,b)=>a.state.place-b.state.place)){
       const row=document.createElement('div');row.textContent=`${p.state.place}  ${p.name}${!p.connected?' · 연결 종료':p.state.finished?' · 완주':''}`;row.className=p.id===online.client.id?'me':'';$('online-ranking').append(row);

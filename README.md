@@ -4,7 +4,7 @@
 
 Windows 데스크톱에서 실행하는 카트 레이싱 개발 프로젝트입니다. 5개 테마 코스에서 AI와 기록에 도전하거나, 초대로 모인 2~8명의 플레이어가 같은 방에서 실시간으로 경주합니다.
 
-> 현재 게임 버전: **V1.5.0 · Online Edition**
+> 현재 게임 버전: **V1.6.0 · Online Edition**
 >
 > 상태: **개발 중인 프로토타입** · Windows x64 · 실제 3D 렌더링 · 싱글플레이 / 멀티플레이
 
@@ -12,11 +12,11 @@ Windows 데스크톱에서 실행하는 카트 레이싱 개발 프로젝트입�
 
 ## Windows 게임 다운로드
 
-**[V1.5.0 Windows x64 실행 파일 다운로드](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/download/v1.5.0/Neon-Apex-v1.5.0-windows-x64.zip)**
+**[V1.6.0 Windows x64 실행 파일 다운로드](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/download/v1.6.0/Neon-Apex-v1.6.0-windows-x64.zip)**
 
-[릴리스 안내와 파일 목록](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/tag/v1.5.0)에서 실행 ZIP을 받으세요. 압축을 모두 푼 다음 `Neon Apex-win32-x64/NeonApex.exe`를 실행하면 됩니다. Node.js 설치나 직접 빌드가 필요 없습니다. GitHub가 별도로 표시하는 **Source code (zip)**은 실행 프로그램이 아닙니다.
+[릴리스 안내와 파일 목록](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/tag/v1.6.0)에서 실행 ZIP을 받으세요. 압축을 모두 푼 다음 `Neon Apex-win32-x64/NeonApex.exe`를 실행하면 됩니다. Node.js 설치나 직접 빌드가 필요 없습니다. GitHub가 별도로 표시하는 **Source code (zip)**은 실행 프로그램이 아닙니다.
 
-같은 공유기에 연결된 PC와 노트북은 **방 열기 → 초대 복사 → 참가 → 준비 → 출발**로 함께 플레이할 수 있습니다. 공개 서버는 아직 운영하지 않으므로 다른 장소의 인터넷에서는 별도 서버 또는 포트 연결 설정이 필요합니다. [동봉된 실행·접속 안내](docs/PLAY_WINDOWS.ko.txt)
+같은 공유기에 연결된 PC와 노트북은 **방 열기 → 초대 복사 → 참가 → 준비 → 출발**로 함께 플레이할 수 있습니다. 다른 집에서는 **인터넷 친구와 방 만들기**를 사용하세요. 무료 임시 서버는 운영자 PC가 켜져 있을 때 이용 가능합니다. [인터넷 체험 안내](PUBLIC_SERVER.md) [동봉된 실행·접속 안내](docs/PLAY_WINDOWS.ko.txt)
 
 ## 프로젝트 소개
 
@@ -175,7 +175,7 @@ Electron 설치 스크립트가 차단되어 실행 엔진이 없을 때만 다�
 
 **공개 게임 서버는 아직 운영하지 않습니다.** 저장소 공개만으로 인터넷 게임 서버가 생기는 것은 아닙니다.
 
-공개 서버를 배포한 뒤 게임의 서버 주소에 접속하거나, 호스트 PC에 필요한 포트 연결을 설정해야 합니다. 서버 실행과 Docker 배포 파일은 포함되어 있습니다.
+**멀티플레이 → 인터넷 친구와 방 만들기 → 초대 복사**로 친구를 초대하세요. 무료 임시 서버는 운영자 PC가 켜져 있어야 합니다. [무료 체험 및 호스팅 안내](PUBLIC_SERVER.md)
 
 자세한 방법: **[ONLINE.md — 접속·방화벽·서버 배포·경기 규칙](ONLINE.md)**
 
@@ -208,7 +208,7 @@ Electron 설치 스크립트가 차단되어 실행 엔진이 없을 때만 다�
 | 서버 계산·전송 | 60Hz 주행 계산 / 20Hz 상태 전송 |
 | 패키징 | @electron/packager |
 | 서버 배포 구성 | Dockerfile / Docker Compose |
-| 버전 관리 | Git 커밋 및 v1.0.0~v1.5.0 태그 |
+| 버전 관리 | Git 커밋 및 v1.0.0~v1.6.0 태그 |
 
 ## 개발 구조
 

@@ -1,6 +1,6 @@
 {
   "name": "neon-apex",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "description": "Neon Apex desktop kart racing",
   "scripts": {
@@ -14,7 +14,8 @@
     "test:3d": "node --test --test-isolation=none tests/three.test.js",
     "test:update": "node --test --test-isolation=none tests/update.test.js",
     "test:online": "node --test --test-isolation=none tests/online.test.js",
-    "start:server": "node online/start.js"
+    "start:server": "node online/start.js",
+    "test:network": "node --test --test-isolation=none tests/snapshots.test.js tests/online.test.js"
   },
   "type": "module",
   "devDependencies": {

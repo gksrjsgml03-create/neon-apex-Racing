@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: neon-apex-server
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeployTrigger: off
+    envVars:
+      - key: PORT
+        value: "8787"

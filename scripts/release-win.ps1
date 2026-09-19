@@ -7,6 +7,7 @@ if (-not (Test-Path (Join-Path $appFolder 'NeonApex.exe'))) {
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/PLAY_WINDOWS.ko.txt') -Destination (Join-Path $appFolder 'START-HERE.ko.txt')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'ONLINE.md') -Destination $appFolder
+Copy-Item -LiteralPath (Join-Path $projectRoot 'PUBLIC_SERVER.md') -Destination $appFolder
 Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $appFolder
 $licenseFolder = Join-Path $appFolder 'third-party-licenses'
 New-Item -ItemType Directory -Path $licenseFolder -Force | Out-Null

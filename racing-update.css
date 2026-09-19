@@ -1,0 +1,12 @@
+#boost-inventory{position:absolute;right:32px;bottom:220px;width:108px;height:112px;filter:drop-shadow(0 5px 8px #183a6666)}
+#boost-inventory svg{width:100%;height:100%}
+#boost-count{position:absolute;right:-5px;bottom:1px;min-width:39px;text-align:center;font-size:38px;line-height:1;font-weight:950;color:white;-webkit-text-stroke:1px #17366e;text-shadow:2px 3px 0 #17366e}
+#boost-inventory kbd{position:absolute;left:30px;top:-15px;background:#193a70;color:white;font-size:13px;padding:3px 8px}
+#boost-inventory.active{filter:drop-shadow(0 0 16px #3cecff)}
+.drift-meter{height:10px!important;border-radius:6px;overflow:hidden;background:#263e5c55!important}
+#drift{background:linear-gradient(90deg,#33c6ff,#ffdc73)!important}
+#recovery,#protection{position:absolute;top:38%;left:50%;transform:translateX(-50%);padding:17px 25px;border:2px solid #ffde83;border-radius:16px;background:#19345ce8;color:white;text-align:center;font-size:19px;box-shadow:0 8px 30px #142c6344}
+#recovery strong{display:block;font-size:27px;margin-bottom:8px}#recovery kbd{font-size:24px;background:#ffe18b;color:#213763;padding:3px 12px}
+#protection{top:24%;padding:8px 18px;font-size:16px;border-color:#66f5ff;color:#bcfbff}
+#surface-label{position:absolute;left:32px;bottom:205px;background:#ffffffda;color:#244269;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:800}
+[hidden]{display:none!important}

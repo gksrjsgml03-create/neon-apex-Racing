@@ -2,19 +2,22 @@ import * as THREE from '../../node_modules/three/build/three.module.js';
 import { SEGMENT } from '../tracks.js';
 import { roadPose, ROAD_HALF } from './road-space.js';
 import { material, mesh, roundBox } from './models.js';
+import { terrainAt } from '../terrain.js';
+import { surfaceMaterials } from './surface-materials.js';
 
 const point=(p,offset,y=0)=>[p.x+p.nx*offset,p.y+y,p.z+p.nz*offset];
 function ribbon(track,left,right,height,mat,filter=()=>true,colors=false) {
-  const positions=[],colorValues=[];
+  const positions=[],colorValues=[],uvs=[];
   for(let i=0;i<track.segments.length;i++) {
     if(!filter(i))continue;
     const a=roadPose(track,i*SEGMENT),b=roadPose(track,(i+1)*SEGMENT);
     const elevation=(pose,offset)=>typeof height==='function'?height(pose,offset):height;
     const vertices=[point(a,left,elevation(a,left)),point(a,right,elevation(a,right)),point(b,left,elevation(b,left)),point(b,right,elevation(b,right))];
     const color=new THREE.Color(Math.floor(i/4)%2?'#fbfbf0':'#f16c6d');
-    for(const j of [0,1,2,1,3,2]){positions.push(...vertices[j]);if(colors)colorValues.push(color.r,color.g,color.b);}
+    for(const j of [0,1,2,1,3,2]){positions.push(...vertices[j]);uvs.push(j%2*3,(i+(j>=2?1:0))*.18);if(colors)colorValues.push(color.r,color.g,color.b);}
   }
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
   if(colors)geometry.setAttribute('color',new THREE.Float32BufferAttribute(colorValues,3));
   geometry.computeVertexNormals();const object=new THREE.Mesh(geometry,mat);object.receiveShadow=true;return object;
 }
@@ -50,16 +53,23 @@ export function createWorld(track) {
   const terrainHeight=(pose,offset)=>-.12-Math.max(0,Math.abs(offset)-half)/24*(pose.y-3);
   root.add(ribbon(track,-half-24,-half,terrainHeight,mats.grass),ribbon(track,-half,half,-.10,mats.grass),ribbon(track,half,half+24,terrainHeight,mats.grass));
   root.add(wall(track,-half-24,mats.rock),wall(track,half+24,mats.rock));
-  root.add(ribbon(track,-half,half,.04,mats.road));
-  const curb=material('#ffffff',{vertexColors:true,roughness:.8});
-  root.add(ribbon(track,-half-.65,-half,.07,curb,()=>true,true),ribbon(track,half,half+.65,.07,curb,()=>true,true));
-  for(const side of [-1,1]) {
-    root.add(ribbon(track,side*(half-.18)-.05,side*(half-.18)+.05,.065,mats.white));
-    root.add(ribbon(track,side*half*.33-.055,side*half*.33+.055,.068,mats.white,i=>i%20<7));
+  const surfaces=surfaceMaterials(),asphalt=i=>terrainAt(track,i*SEGMENT).id==='asphalt';
+  for(const [id,mat] of Object.entries(surfaces)){
+    const selected=i=>terrainAt(track,i*SEGMENT).id===id;
+    if(!track.segments.some((_,i)=>selected(i))){mat.map.dispose();mat.dispose();continue;}
+    root.add(ribbon(track,-half,half,.04,mat,selected));
+    if(id==='sand'||id==='water')root.add(ribbon(track,-half-5,-half,terrainHeight,surfaces.sand,selected),ribbon(track,half,half+5,terrainHeight,surfaces.sand,selected));
   }
+  const curb=material('#ffffff',{vertexColors:true,roughness:.8});
+  root.add(ribbon(track,-half-.65,-half,.07,curb,asphalt,true),ribbon(track,half,half+.65,.07,curb,asphalt,true));
+  for(const side of [-1,1]) {
+    root.add(ribbon(track,side*(half-.18)-.05,side*(half-.18)+.05,.065,mats.white,asphalt));
+  }
+  for(const lane of kind==='metro'?[-.5,0,.5]:[0])root.add(ribbon(track,lane*half-.055,lane*half+.055,.068,mats.white,i=>asphalt(i)&&i%20<7));
   const padMat=material('#79f1ed',{emissive:'#2ec7df',emissiveIntensity:.35,transparent:true,opacity:.78});
   root.add(ribbon(track,-half*.22,half*.22,.083,padMat,i=>track.segments[i].fluxZone&&i%4<2));
-  const water=mesh(root,new THREE.PlaneGeometry(2400,2400),material(kind==='metro'?'#467eb4':'#46b8d2',{roughness:.22,metalness:.24}),[0,-7,0]);water.rotation.x=-Math.PI/2;water.castShadow=false;
+  const ocean=kind==='coast'||kind==='metro';
+  const ground=mesh(root,new THREE.PlaneGeometry(2400,2400),material(ocean?(kind==='metro'?'#467eb4':'#46b8d2'):kind==='canyon'?'#dcb77b':kind==='alpine'?'#e8f1ff':'#719756',{roughness:ocean?.22:1,metalness:ocean?.24:0}),[0,-7,0]);ground.rotation.x=-Math.PI/2;ground.castShadow=false;
 
   function prop(distance,lateral,onGround=false) {
     const pose=roadPose(track,distance,lateral/ROAD_HALF),group=new THREE.Group();group.position.set(pose.x,pose.y+(onGround?terrainHeight(pose,lateral):0),pose.z);group.rotation.y=pose.yaw;root.add(group);props.push(group);return group;
@@ -100,8 +110,9 @@ export function createWorld(track) {
       // Continuous low safety wall, visible from the chase camera without hiding turns.
       const next=roadPose(track,(i+16)*SEGMENT,side*(half+1)/ROAD_HALF),length=Math.hypot(next.x-barrier.position.x,next.z-barrier.position.z),rise=next.y-barrier.position.y;
       barrier.rotation.y=Math.atan2(-(next.x-barrier.position.x),-(next.z-barrier.position.z));
-      const rail=mesh(barrier,new THREE.BoxGeometry(.35,.65,Math.hypot(length,rise)+.25),i%32?mats.white:mats.blue,[0,.62+rise/2,-length/2]);rail.rotation.x=Math.atan2(rise,length);rail.castShadow=false;
-      mesh(barrier,new THREE.BoxGeometry(.42,1,.42),mats.white,[0,.5,0]).castShadow=false;
+      const natural=!asphalt(i),fence=natural?(kind==='canyon'||kind==='alpine'?mats.rock:mats.wood):(i%32?mats.white:mats.blue);
+      const rail=mesh(barrier,new THREE.BoxGeometry(natural?.22:.35,natural?.32:.65,Math.hypot(length,rise)+.25),fence,[0,.62+rise/2,-length/2]);rail.rotation.x=Math.atan2(rise,length);rail.castShadow=false;
+      mesh(barrier,new THREE.BoxGeometry(.42,1,.42),natural?mats.wood:mats.white,[0,.5,0]).castShadow=false;
     }
     if(i%32===0&&Math.abs(track.segments[i].curve)>1.1) {
       const sign=prop(i*SEGMENT,(track.segments[i].curve>0?-1:1)*(half+2.5));
@@ -112,6 +123,7 @@ export function createWorld(track) {
   for(let i=0;i<track.segments.length;i+=24)for(const side of [-1,1]) {
     const g=prop(i*SEGMENT,side*(half+5+rnd()*13),true);
     const index=Math.floor(i/24),scale=.8+rnd()*.7;g.rotation.y+=rnd()*.6;
+    if(kind==='canyon')mesh(g,new THREE.SphereGeometry(1,12,8),mats.grass,[side*5,-1,0],[6,2.5,9]).castShadow=false;
     if(kind==='coast') {if(index%4===0)house(g,index);else if(index%3===0)palm(g,scale);else tree(g,scale*.8);}
     else if(kind==='forest') {if(index%9===0)house(g,index);else tree(g,scale*1.25);}
     else if(kind==='alpine') {if(index%8===0)house(g,index);else tree(g,scale);}

@@ -1,6 +1,6 @@
 export const GAME_KEYS = new Set([
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD',
-  'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'KeyE', 'Escape', 'Space',
+  'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'KeyE', 'KeyR', 'KeyC', 'Escape', 'Space',
 ]);
 export function drivingInput(keys) {
   return {
@@ -14,6 +14,7 @@ export function drivingInput(keys) {
 export function actionForKey(code) {
   if (code === 'ControlLeft' || code === 'ControlRight') return 'boost';
   if (code === 'KeyE') return 'shift';
+  if (code === 'KeyR') return 'respawn';
   if (code === 'Escape') return 'pause';
   return null;
 }

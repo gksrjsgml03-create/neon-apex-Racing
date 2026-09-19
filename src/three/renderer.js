@@ -3,6 +3,7 @@ import { roadPose } from './road-space.js';
 import { createWorld, disposeWorld } from './world.js';
 import { CHARACTERS, KARTS, makeKart, makeCharacter } from './models.js';
 import { segmentAt } from '../tracks.js';
+import { terrainAt } from '../terrain.js';
 
 export class Renderer {
   constructor(canvas) {
@@ -20,6 +21,8 @@ export class Renderer {
     this.characterId='ace';this.kartId='bolt';this.look=new THREE.Vector3();this.lastTime=performance.now();
     this.cameraMode='chase';this.fleet=new THREE.Group();this.scene.add(this.fleet);this.createFleet();
     this.effects=new THREE.Group();this.scene.add(this.effects);this.particles=[];
+    this.shield=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),new THREE.MeshBasicMaterial({color:'#65eeff',transparent:true,opacity:.18,wireframe:true,depthWrite:false}));
+    this.shield.scale.set(1.65,1.8,2.05);this.effects.add(this.shield);this.shield.visible=false;
     const smokeGeometry=new THREE.SphereGeometry(.12,7,5);
     for(let i=0;i<48;i++){const mat=new THREE.MeshBasicMaterial({color:i%2?'#b5eaff':'#ffdf83',transparent:true,opacity:0,depthWrite:false});const p=new THREE.Mesh(smokeGeometry,mat);p.visible=false;p.userData={life:0,velocity:new THREE.Vector3()};this.effects.add(p);this.particles.push(p);}
     this.particleCursor=0;this.resize();window.addEventListener('resize',()=>this.resize());
@@ -53,10 +56,12 @@ export class Renderer {
   }
   placeCar(car,distance,lane,race,dt,player=false){
     const p=roadPose(race.track,distance,lane);
-    car.position.set(p.x,p.y+.10,p.z);
-    const steer=player?(race.visualSteer||0):0;
+    const roll=player?(race.impactRoll||0):0;
+    const bump=terrainAt(race.track,distance).bump*Math.sin(distance*.04)*Math.min(1,Math.abs(race.speed)/3000);
+    car.position.set(p.x,p.y+.10+(player?(race.airHeight||0)+1.2*(1-Math.cos(roll)):0)+bump,p.z);
+    const steer=player&&!race.overturned?(race.visualSteer||0):0;
     const slip=player?(race.drifting?.52:.10)*steer:0;
-    const desired=new THREE.Quaternion().setFromEuler(new THREE.Euler(p.pitch,p.yaw-slip,player?-steer*(race.drifting?.055:.025):0,'YXZ'));
+    const desired=new THREE.Quaternion().setFromEuler(new THREE.Euler(p.pitch,p.yaw-slip,roll+(player?-steer*(race.drifting?.055:.025):0),'YXZ'));
     if(this.snap)car.quaternion.copy(desired);else car.quaternion.slerp(desired,1-Math.exp(-dt*12));
     for(const wheel of car.userData.wheels){wheel.pivot.rotation.x-=race.speed*dt*.013;wheel.pivot.rotation.y=wheel.front?-steer*.28:0;}
     for(const fire of car.userData.flames){fire.visible=player&&race.boostTime>0;fire.scale.y=.75+Math.sin(race.time*47)*.22;}
@@ -67,7 +72,9 @@ export class Renderer {
     const now=performance.now(),dt=Math.max(.001,Math.min(.05,(now-this.lastTime)/1000));this.lastTime=now;
     if(this.track!==race.track)this.loadTrack(race.track);
     if(menu!==this.wasMenu){this.snap=true;this.wasMenu=menu;}
+    if(this.respawnSerial!==race.respawnSerial){this.snap=true;this.respawnSerial=race.respawnSerial;this.particles.forEach(p=>{p.visible=false;p.userData.life=0;});}
     const p=this.placeCar(this.cars[0],race.distance,race.x,race,dt,true),position=new THREE.Vector3(p.x,p.y,p.z),tangent=new THREE.Vector3(p.tx,0,p.tz),right=new THREE.Vector3(p.nx,0,p.nz);
+    this.shield.visible=!menu&&race.invulnerable>0;this.shield.position.copy(this.cars[0].position).add(new THREE.Vector3(0,1,0));this.shield.material.opacity=.14+Math.sin(race.time*24)*.06;
     for(let i=0;i<race.rivals.length;i++){
       const rival=race.rivals[i],car=this.cars[i+1];
       if(menu){

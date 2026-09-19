@@ -1,19 +1,19 @@
 // Each closed spline is the source for both road curvature and the course map.
 export const SEGMENT = 160;
 const definitions = [
-  { id:'coast', level:1, name:'코랄 코스트', english:'CORAL COAST', subtitle:'바닷바람을 가르는 첫 번째 코너', difficulty:'입문', feature:'넓은 도로 · 완만한 U턴', width:1.24, count:900, hill:110, turn:76, bpm:116,
+  { id:'coast', level:1, name:'코랄 코스트', english:'CORAL COAST', subtitle:'바닷바람을 가르는 첫 번째 코너', difficulty:'입문', feature:'해안 대로 · 모래사장 · 얕은 물', width:1.48, count:900, hill:110, turn:76, bpm:116,
     points:[[15,75],[15,40],[28,16],[60,12],[86,24],[91,54],[77,79],[48,87]],
     theme:{kind:'coast',sky:'#57bde0',horizon:'#d7f2e8',ground:'#e7d29b',groundAlt:'#ddc88d',road:'#546476',roadAlt:'#506071',accent:'#ffd873',curb:'#f57071',mountain:'#82c9bf',foliage:'#2a9470'} },
-  { id:'forest', level:2, name:'포레스트 리본', english:'FOREST RIBBON', subtitle:'숲속을 엮는 리드미컬한 S커브', difficulty:'초급', feature:'연속 S커브 · 숲속 고저차', width:1.14, count:1020, hill:380, turn:102, bpm:124,
+  { id:'forest', level:2, name:'포레스트 리본', english:'FOREST RIBBON', subtitle:'숲속을 엮는 리드미컬한 S커브', difficulty:'초급', feature:'숲속 흙길 · 나무 다리 · S커브', width:1.32, count:1020, hill:380, turn:102, bpm:124,
     points:[[13,78],[12,40],[26,15],[51,13],[57,31],[42,46],[56,59],[80,42],[91,57],[83,83],[48,88]],
     theme:{kind:'forest',sky:'#8cbecd',horizon:'#e8edc8',ground:'#74a96d',groundAlt:'#699e61',road:'#535e5a',roadAlt:'#4e5955',accent:'#b9f885',curb:'#eee6c2',mountain:'#62958b',foliage:'#255f50'} },
-  { id:'canyon', level:3, name:'레드록 헤어핀', english:'REDROCK HAIRPIN', subtitle:'붉은 협곡, 깊게 꺾어야 살아나는 라인', difficulty:'중급', feature:'더블 헤어핀 · 긴 부스터 직선', width:1.04, count:1120, hill:530, turn:125, bpm:132,
+  { id:'canyon', level:3, name:'레드록 헤어핀', english:'REDROCK HAIRPIN', subtitle:'붉은 협곡, 깊게 꺾어야 살아나는 라인', difficulty:'중급', feature:'사막 모래 · 자갈길 · 헤어핀', width:1.28, count:1120, hill:530, turn:125, bpm:132,
     points:[[10,84],[10,22],[23,12],[37,20],[37,57],[48,66],[57,55],[57,23],[72,13],[88,25],[90,70],[74,87],[42,88]],
     theme:{kind:'canyon',sky:'#e6a47c',horizon:'#ffe3b5',ground:'#b57851',groundAlt:'#aa6b47',road:'#685651',roadAlt:'#62514d',accent:'#ffcf74',curb:'#f5e2b6',mountain:'#a85f48',foliage:'#73976b'} },
-  { id:'alpine', level:4, name:'알파인 스위치백', english:'ALPINE SWITCHBACK', subtitle:'설산의 오르막 끝에 기다리는 급커브', difficulty:'고급', feature:'좁은 산길 · 연속 스위치백', width:.96, count:1200, hill:740, turn:151, bpm:140,
+  { id:'alpine', level:4, name:'알파인 스위치백', english:'ALPINE SWITCHBACK', subtitle:'설산의 오르막 끝에 기다리는 급커브', difficulty:'고급', feature:'눈길 · 빙판 · 스위치백', width:1.12, count:1200, hill:740, turn:151, bpm:140,
     points:[[10,85],[10,54],[24,42],[12,26],[24,11],[48,14],[50,34],[38,51],[52,63],[64,45],[65,18],[82,13],[92,33],[86,69],[68,86],[39,90]],
     theme:{kind:'alpine',sky:'#688fbf',horizon:'#e3efff',ground:'#e3edf2',groundAlt:'#d6e4ef',road:'#697b90',roadAlt:'#63758a',accent:'#a5f3ff',curb:'#df6685',mountain:'#a8c4dd',foliage:'#387885'} },
-  { id:'metro', level:5, name:'네온 오버패스', english:'NEON OVERPASS', subtitle:'밤의 도시를 잇는 마지막 테크니컬 코스', difficulty:'마스터', feature:'고속 시케인 · 급커브 · 고가도로', width:.90, count:1300, hill:380, turn:180, bpm:148,
+  { id:'metro', level:5, name:'네온 오버패스', english:'NEON OVERPASS', subtitle:'밤의 도시를 잇는 마지막 테크니컬 코스', difficulty:'마스터', feature:'넓은 4차로 · 시케인 · 고가도로', width:1.08, count:1300, hill:380, turn:180, bpm:148,
     points:[[10,84],[9,43],[23,32],[13,16],[31,9],[44,25],[36,45],[48,57],[60,42],[57,19],[75,10],[92,23],[81,41],[92,57],[82,80],[64,87],[50,74],[33,87]],
     theme:{kind:'metro',sky:'#141c43',horizon:'#725a8e',ground:'#222941',groundAlt:'#1e263d',road:'#34415b',roadAlt:'#303c56',accent:'#cfff69',curb:'#b388ff',mountain:'#303655',foliage:'#638baf'} },
 ];

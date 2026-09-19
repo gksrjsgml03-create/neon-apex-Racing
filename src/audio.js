@@ -10,6 +10,7 @@ export class AudioEngine {
     this.bpm = 116;
     this.root = 57;
     this.lastBoost = false;
+    this.lastImpact = 0;
     this.lastCount = null;
     this.step = 0;
   }
@@ -161,7 +162,7 @@ export class AudioEngine {
 
   update(race, state) {
     if (!this.ctx) return;
-    const now = this.ctx.currentTime, active = state === 'racing', driving = active && race.countdown === 0;
+    const now = this.ctx.currentTime, active = state === 'racing', driving = active && race.countdown === 0 && !race.overturned;
     const speed = Math.abs(race.speed), ratio = Math.min(1, speed / 6500), boost = race.boostTime > 0;
     this.musicActive = active || (state === 'menu' && now < (this.previewUntil || 0));
     this.master.gain.setTargetAtTime(this.enabled && state !== 'paused' ? .7 : 0, now, .04);
@@ -175,6 +176,7 @@ export class AudioEngine {
     this.road.filter.frequency.setTargetAtTime(450 + ratio * 1000, now, .1);
     this.skidTone.source.frequency.setTargetAtTime(780 + Math.sin(race.time * 27) * 90, now, .03);
     if (driving && boost && !this.lastBoost) this.boostSound();
+    if(active&&race.impactSerial!==this.lastImpact){this.percussion(now,.25,.3,220,this.effects);this.lastImpact=race.impactSerial;}
     this.lastBoost = boost;
     const count = Math.max(0, Math.ceil(race.countdown - .7));
     if (active && count !== this.lastCount && race.countdown > 0) this.tone(count ? 76 : 88, now, count ? .12 : .45, .17, 'sine', this.effects);

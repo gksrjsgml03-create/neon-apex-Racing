@@ -5,6 +5,7 @@ import { CHARACTERS, KARTS } from './three/models.js';
 import { background, landmark } from './scenery.js';
 import { AudioEngine } from './audio.js';
 import { drivingInput, actionForKey, GAME_KEYS } from './input.js';
+import { terrainAt } from './terrain.js';
 
 const $ = id => document.getElementById(id);
 const read = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
@@ -32,7 +33,7 @@ for(const [index,character] of CHARACTERS.entries()){
 for(const kart of KARTS){const button=document.createElement('button');button.className='kart-choice';button.dataset.kart=kart.id;button.style.setProperty('--swatch',kart.color);button.innerHTML=`<img src="${renderer.portrait(kart.id,true)}" alt=""><small>${kart.name}</small>`;button.setAttribute('aria-label',`카트 ${kart.name}`);button.onclick=()=>{kartId=kart.id;appearance();};$('karts').append(button);}
 appearance();
 let state = 'menu', last = performance.now(), accumulator = 0;
-const recordKey = () => `neon-apex-v13-best-${selected.id}`;
+const recordKey = () => `neon-apex-v14-best-${selected.id}`;
 const bestTime = () => { const value = Number(read(recordKey(), '0')); return Number.isFinite(value) && value > 0 ? value : null; };
 
 function audioButton() {
@@ -129,11 +130,19 @@ function hud() {
   $('speed').textContent = String(Math.round(Math.abs(race.speed)/30)).padStart(3,'0');
   $('energy').style.width = `${race.energy}%`; $('energy-label').textContent = `페이즈 에너지 ${Math.round(race.energy)}%`;
   $('drift').style.width = `${race.drift*100}%`; $('phase').textContent = race.flux ? 'FLUX DIMENSION' : 'STREET MODE';
-  $('boost-label').textContent = `CTRL 부스터 × ${race.boosts}`;
+  $('boost-label').textContent = `충전 ${Math.floor(race.drift*100)}% / 100%`;
+  $('boost-inventory').hidden=race.boosts===0;
+  $('boost-inventory').classList.toggle('active',race.boostTime>0);
+  $('boost-inventory').setAttribute('aria-label',`부스터 ${race.boosts}개 · CTRL 사용`);
+  $('boost-count').textContent=String(race.boosts);
+  $('recovery').hidden=!race.overturned;
+  $('protection').hidden=race.invulnerable<=0;
+  $('protection').textContent=`복귀 보호 ${race.invulnerable.toFixed(1)}초`;
+  $('surface-label').textContent=`주행 노면 · ${terrainAt(race.track,race.distance).name}`;
   $('boost-status').textContent = race.speed < 0 ? 'R · REVERSE' : race.boostTime > 0 ? 'OVERDRIVE ACTIVE' : race.flux ? 'PHASE DRIVE' : 'D · ELECTRIC DRIVE';
   $('message').textContent = race.countdown > 0 ? (race.countdown > .7 ? String(Math.ceil(race.countdown-.7)) : 'GO!') : race.messageTime > 0 ? race.message : '';
   const ahead = segmentAt(race.distance+3200, race.track).curve;
-  $('corner-hint').hidden = race.countdown > 0 || race.speed < 0;
+  $('corner-hint').hidden = race.countdown > 0 || race.speed < 0 || race.overturned;
   $('corner-hint').innerHTML = Math.abs(ahead) > 1.15 ? `<strong>${ahead > 0 ? '↱' : '↰'}</strong>${Math.abs(ahead)>2.5?'급커브':'코너'} · SHIFT 드리프트` : '<strong>↑</strong> 가속 구간';
 }
 function frame(now) {

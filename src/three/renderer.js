@@ -31,10 +31,19 @@ export class Renderer {
   resize(){this.gpu.setSize(window.innerWidth,window.innerHeight,false);this.camera.aspect=window.innerWidth/window.innerHeight;this.camera.updateProjectionMatrix();}
   createFleet(){
     if(this.cars){for(const car of this.cars)disposeWorld(car);this.fleet.clear();}
-    this.cars=[makeKart(this.kartId,this.characterId),...Array.from({length:5},(_,i)=>makeKart(KARTS[(i+1)%5].id,CHARACTERS[(i+1)%6].id))];
+    const opponents=this.opponents||Array.from({length:5},(_,i)=>({kart:KARTS[(i+1)%5].id,character:CHARACTERS[(i+1)%6].id}));
+    this.cars=[makeKart(this.kartId,this.characterId),...opponents.map(p=>{
+      const car=makeKart(p.kart,p.character);
+      if(p.name){
+        const canvas=document.createElement('canvas');canvas.width=256;canvas.height=48;const c=canvas.getContext('2d');c.fillStyle='#183867cc';c.fillRect(0,0,256,48);c.fillStyle='#ffffff';c.font='bold 24px sans-serif';c.textAlign='center';c.fillText(p.name,128,32,240);
+        const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false}));tag.position.y=3.2;tag.scale.set(2.8,.525,1);car.add(tag);
+      }
+      return car;
+    })];
     this.cars.forEach(car=>this.fleet.add(car));
   }
   setAppearance(character,kart){if(character===this.characterId&&kart===this.kartId)return;this.characterId=character;this.kartId=kart;this.createFleet();}
+  setOpponents(players=null){this.opponents=players;this.createFleet();this.snap=true;}
   toggleCamera(){this.cameraMode=this.cameraMode==='chase'?'wide':'chase';return this.cameraMode;}
   portrait(id,kart=false){
     const scene=new THREE.Scene();scene.background=new THREE.Color('#eaf3ff');scene.add(new THREE.HemisphereLight('#ffffff','#a0b3c9',2));
@@ -80,7 +89,10 @@ export class Renderer {
       if(menu){
         car.visible=i<2;const offset=(i?1:-1)*3.4;
         this.placeCar(car,race.distance-450,offset/8,race,dt);car.position.y+=.02;
-      }else{this.placeCar(car,rival.distance,rival.x,race,dt);car.visible=car.position.distanceToSquared(position)<180*180;}
+      }else{
+        const remote=rival.id?{...rival,track:race.track}:race;
+        this.placeCar(car,rival.distance,rival.x,remote,dt,!!rival.id);car.visible=rival.connected!==false&&car.position.distanceToSquared(position)<180*180;
+      }
     }
     let cameraPosition,target;
     if(menu){

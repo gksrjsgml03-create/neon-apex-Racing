@@ -151,21 +151,12 @@ export class AudioEngine {
     this.percussion(now, .8, .23, 900, this.effects);
   }
 
-  async preview() {
-    this.enabled = true;
-    await this.unlock();
-    this.setVolumes(this.musicVolume, this.effectsVolume);
-    this.musicActive = true;
-    this.previewUntil = this.ctx.currentTime + 4;
-    this.boostSound();
-  }
-
   update(race, state) {
     if (!this.ctx) return;
     const now = this.ctx.currentTime, active = state === 'racing', driving = active && race.countdown === 0 && !race.overturned;
     const speed = Math.abs(race.speed), ratio = Math.min(1, speed / 6500), boost = race.boostTime > 0;
-    this.musicActive = active || (state === 'menu' && now < (this.previewUntil || 0));
-    this.master.gain.setTargetAtTime(this.enabled && state !== 'paused' ? .7 : 0, now, .04);
+    this.musicActive = true;
+    this.master.gain.setTargetAtTime(this.enabled ? .7 : 0, now, .04);
     const set = (node, value) => node.gain.gain.setTargetAtTime(driving ? value : 0, now, .07);
     set(this.engine, .045 + ratio * .07); set(this.motor, .035 + ratio * .045);
     set(this.road, ratio * .12); set(this.skid, race.drifting ? .19 : 0);

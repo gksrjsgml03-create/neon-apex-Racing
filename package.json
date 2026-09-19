@@ -1,6 +1,20 @@
 {
-  "name": "neon-apex", "version": "1.0.0", "private": true,
-  "description": "A dependency-free arcade kart racing prototype",
-  "scripts": { "start": "node server.mjs", "check": "node --check server.mjs && node --check src/main.js && node --check src/race.js && node --check src/render.js && node --check src/audio.js", "test": "node --test --test-isolation=none tests/race.test.js" },
-  "type": "module"
+  "name": "neon-apex",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Neon Apex desktop kart racing",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check server.mjs && node --check src/main.js && node --check src/race.js && node --check src/render.js && node --check src/audio.js && node --check src/input.js && node --check src/vehicle.js && node --check desktop/main.cjs && node --check scripts/package.mjs",
+    "test": "node --test --test-isolation=none tests/race.test.js",
+    "start:web": "node server.mjs",
+    "build:win": "node scripts/package.mjs",
+    "test:controls": "node --test --test-isolation=none tests/controls.test.js"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "44.4.3"
+  },
+  "main": "desktop/main.cjs"
 }

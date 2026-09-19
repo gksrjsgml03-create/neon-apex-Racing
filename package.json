@@ -1,0 +1,6 @@
+{
+  "name": "neon-apex", "version": "1.0.0", "private": true,
+  "description": "A dependency-free arcade kart racing prototype",
+  "scripts": { "start": "node server.mjs", "check": "node --check server.mjs && node --check src/main.js && node --check src/race.js && node --check src/render.js && node --check src/audio.js", "test": "node --test --test-isolation=none tests/race.test.js" },
+  "type": "module"
+}

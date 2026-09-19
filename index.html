@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NEON APEX — Shift the race.</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<canvas id="world" aria-label="네온 에이펙스 레이싱 게임"></canvas>
+<div class="vignette"></div>
+<header><a class="brand" href="/">N<span>▰</span>A <small>NEON APEX</small></a><div class="edition">INDEPENDENT KART RACING <b>VOL. 01</b></div><button id="sound" class="icon" aria-label="소리 켜기">SOUND OFF</button></header>
+<main id="menu" class="screen">
+ <div class="eyebrow"><i></i> THE CITY IS YOUR CIRCUIT</div>
+ <h1>CHASE THE<br><em>NEXT</em> APEX<span>.</span></h1>
+ <p class="intro">코너를 지배하고, 트랙의 차원을 바꾸세요.<br>당신만의 레이싱 라인은 아직 그려지지 않았습니다.</p>
+ <div class="track-card"><span class="track-number">01</span><div><small>TONIGHT'S CIRCUIT</small><strong>미드나이트 루프 <span>↗</span></strong><p>네온 시티 · 3 LAPS · 6 RACERS</p></div><svg viewBox="0 0 110 70" aria-hidden="true"><path d="M25 55 C-5 35 20 5 48 13 S110 10 95 40 S70 62 60 45 S45 70 25 55Z"/></svg></div>
+ <button id="start" class="primary">레이스 시작 <span>↗</span></button>
+ <div class="menu-bottom"><span>KEYBOARD PLAY</span><span>LOCAL V1.0</span><span id="record">첫 기록에 도전하세요</span></div>
+</main>
+<aside id="guide"><div class="tag">A DIFFERENT WAY TO RACE</div><h2>같은 도로.<br><span>다른 차원.</span></h2><p><kbd>E</kbd> 페이즈 시프트</p><p class="guide-copy">드리프트로 에너지를 모아<br>숨겨진 고속 트랙으로 진입하세요.<br>더 빠르게, 더 아슬아슬하게.</p><div class="phase-preview"><span>STREET</span><i>⇄</i><span>FLUX</span></div><div class="controls"><p><kbd>↑ ↓</kbd> 가속 / 브레이크</p><p><kbd>← →</kbd> 스티어링</p><p><kbd>SPACE</kbd> 드리프트</p><p><kbd>SHIFT</kbd> 부스터</p><p><kbd>ESC</kbd> 일시 정지</p></div></aside>
+<section id="hud" hidden><div class="race-top"><div><small>POSITION</small><strong id="position">06<span>/ 06</span></strong></div><div class="lap-block"><small>MIDNIGHT LOOP</small><strong id="lap">LAP 1 <span>/ 3</span></strong><p id="time">00:00.000</p></div></div><div id="message"></div><div class="race-bottom"><div class="energy-panel"><div><b id="phase">STREET MODE</b><span><kbd>E</kbd> SHIFT DIMENSION</span></div><div class="meter"><i id="energy"></i></div><p id="energy-label">페이즈 에너지 50%</p><div class="drift-meter"><i id="drift"></i></div><p>SPACE 드리프트 <span id="boost-label">SHIFT 부스터 × 1</span></p></div><div class="speed"><strong id="speed">000</strong><span>KM/H</span><div id="boost-status">ELECTRIC DRIVE</div></div></div><canvas id="map" width="160" height="110"></canvas><div class="race-help">↑ 가속 · ← → 조향 · SPACE 드리프트 · SHIFT 부스터 · E 차원 전환 · ESC 정지</div></section>
+<section id="overlay" class="modal" hidden><div class="modal-card"><div class="eyebrow" id="overlay-label">TAKE A BREATH</div><h2 id="overlay-title">PIT STOP.</h2><p id="overlay-text">잠시 멈춰도, 레이스는 기다립니다.</p><div id="results"></div><button id="resume" class="primary">계속 달리기 ↗</button><button id="restart" class="secondary">다시 시작</button><button id="home" class="secondary">메인으로</button></div></section>
+<footer id="footer"><span><i></i> ALL SYSTEMS READY</span><span>DRIFT. CHARGE. SHIFT.</span><span>DESIGNED FOR THE NEXT CORNER ↗</span></footer>
+<script type="module" src="src/main.js"></script></body></html>

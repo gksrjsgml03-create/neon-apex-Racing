@@ -1,28 +1,132 @@
-import {Race,formatTime} from './race.js';
-import {LENGTH} from './track.js';
-import {Renderer} from './render.js';
-import {AudioEngine} from './audio.js';
-import {drivingInput,actionForKey,GAME_KEYS} from './input.js';
-const $=id=>document.getElementById(id),race=new Race(),renderer=new Renderer($('world')),audio=new AudioEngine(),keys=new Set();
-let state='menu',last=performance.now(),best=null;
-try{const saved=Number(localStorage.getItem('neon-apex-best'));if(Number.isFinite(saved)&&saved>0)best=saved;}catch{}
-function record(){ $('record').textContent=best?`BEST ${formatTime(best)}`:'첫 기록에 도전하세요';}record();
-function view(){const playing=state!=='menu';document.body.classList.toggle('playing',playing);$('menu').hidden=playing;$('guide').hidden=playing;$('footer').hidden=playing;$('hud').hidden=!playing;$('overlay').hidden=state!=='paused'&&state!=='finished';}
-function start(){keys.clear();race.reset();state='racing';$('results').replaceChildren();view();}
-function pause(){if(state!=='racing')return;state='paused';keys.clear();$('overlay-label').textContent='TAKE A BREATH';$('overlay-title').textContent='PIT STOP.';$('overlay-text').textContent='잠시 멈춰도, 레이스는 기다립니다.';$('resume').hidden=false;$('results').replaceChildren();view();}
-function finish(){state='finished';const isBest=!best||race.time<best;if(isBest){best=race.time;try{localStorage.setItem('neon-apex-best',String(best));}catch{}}record();$('overlay-label').textContent=isBest?'NEW PERSONAL BEST':'RACE COMPLETE';$('overlay-title').textContent=`P${race.place}. FINISH.`;$('overlay-text').textContent='다음 코너에는 더 빠른 라인이 기다립니다.';$('resume').hidden=true;$('results').innerHTML=`<p>전체 기록 <b>${formatTime(race.time)}</b></p>${race.lapTimes.map((t,i)=>`<p>LAP ${i+1}<b>${formatTime(t)}</b></p>`).join('')}<p>개인 최고 <b>${formatTime(best)}</b></p>`;view();}
-$('start').onclick=start;$('restart').onclick=start;$('resume').onclick=()=>{state='racing';keys.clear();view();};$('home').onclick=()=>{state='menu';keys.clear();race.reset();document.body.classList.remove('flux');view();};$('sound').onclick=()=>{const on=audio.toggle();$('sound').textContent=on?'SOUND ON':'SOUND OFF';$('sound').setAttribute('aria-label',on?'소리 끄기':'소리 켜기');};
-document.querySelector('.brand').addEventListener('click',e=>{e.preventDefault();$('home').click();});
-window.addEventListener('keydown',e=>{if(GAME_KEYS.has(e.code))e.preventDefault();keys.add(e.code);if(e.repeat)return;const action=actionForKey(e.code);if(action==='pause'){if(state==='racing')pause();else if(state==='paused'){$('resume').click();}}else if(state==='racing'&&action)race[action]();});
-window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
-function frame(now){const dt=Math.max(0,Math.min((now-last)/1000,.05));last=now;
- if(state==='menu'){race.distance+=dt*2200;race.time+=dt;renderer.draw(race,true);}
- else{
-  if(state==='racing'){
-   const input=drivingInput(keys);race.visualSteer=(input.right?1:0)-(input.left?1:0);race.update(dt,input);if(race.finished)finish();
+import { Race, formatTime } from './race.js';
+import { TRACKS, getTrack, routePath, segmentAt } from './tracks.js';
+import { Renderer } from './render.js';
+import { background, landmark } from './scenery.js';
+import { AudioEngine } from './audio.js';
+import { drivingInput, actionForKey, GAME_KEYS } from './input.js';
+
+const $ = id => document.getElementById(id);
+const read = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
+const save = (key, value) => { try { localStorage.setItem(key, String(value)); } catch {} };
+let selected = getTrack(read('neon-apex-track', 'coast'));
+const race = new Race(selected.id), renderer = new Renderer($('world')), audio = new AudioEngine(), keys = new Set();
+let state = 'menu', last = performance.now(), accumulator = 0;
+const recordKey = () => `neon-apex-v12-best-${selected.id}`;
+const bestTime = () => { const value = Number(read(recordKey(), '0')); return Number.isFinite(value) && value > 0 ? value : null; };
+
+function audioButton() {
+  $('sound').textContent = audio.enabled ? 'SOUND ON' : 'SOUND OFF';
+  $('sound').setAttribute('aria-label', audio.enabled ? '소리 끄기' : '소리 켜기');
+}
+async function unlockAudio() {
+  try { await audio.unlock(); audioButton(); }
+  catch { $('sound').textContent = '소리 다시 켜기'; }
+}
+function volumes() {
+  audio.setVolumes(Number($('music-volume').value) / 100, Number($('effects-volume').value) / 100);
+  save('neon-apex-music', $('music-volume').value); save('neon-apex-effects', $('effects-volume').value);
+}
+for (const [id, key, fallback] of [['music-volume','neon-apex-music',55],['effects-volume','neon-apex-effects',75]]) {
+  $(id).value = read(key, fallback); $(id).addEventListener('input', volumes);
+}
+volumes();
+
+function record() { const best = bestTime(); $('record').textContent = best ? `이 맵 최고 기록 ${formatTime(best)}` : '이 맵의 첫 기록에 도전하세요'; }
+function selectTrack(track) {
+  selected = track; save('neon-apex-track', track.id); race.reset(track.id);
+  race.distance = track.length * .16;
+  document.body.classList.remove('flux'); document.documentElement.style.setProperty('--lime', track.theme.accent);
+  document.querySelectorAll('.course').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.track === track.id)));
+  $('selected-level').textContent = `STAGE 0${track.level} / ${track.difficulty}`;
+  $('selected-name').textContent = track.name;
+  $('selected-description').textContent = `${track.subtitle} · ${track.feature}`;
+  $('hud-track').textContent = track.english;
+  audio.setTrack(track); record();
+}
+for (const track of TRACKS) {
+  const button = document.createElement('button');
+  button.className = 'course'; button.dataset.track = track.id;
+  button.style.setProperty('--course-accent', track.theme.accent);
+  button.setAttribute('aria-label', `${track.level}단계 ${track.name} ${track.difficulty}`);
+  button.innerHTML = `<div class="course-art"><canvas width="320" height="180" aria-hidden="true"></canvas><svg class="course-route" viewBox="0 0 100 100" aria-hidden="true"><path d="${routePath(track)}"/></svg><span class="course-level">0${track.level}</span><span class="course-check">✓</span></div><div class="course-copy"><small>${track.english}</small><strong>${track.name}</strong><div class="course-bottom"><span>${track.difficulty}</span><span class="difficulty-bars" aria-hidden="true">${Array.from({length:5},(_,i)=>`<i class="${i<track.level?'lit':''}"></i>`).join('')}</span></div></div>`;
+  button.onclick = () => selectTrack(track);
+  $('track-list').append(button);
+  const c = button.querySelector('canvas').getContext('2d');
+  background(c,320,180,track,0,0,false);
+  landmark(c,40,170,75,track.theme,1); landmark(c,285,180,60,track.theme,2);
+}
+selectTrack(selected);
+
+function view() {
+  const playing = state !== 'menu'; document.body.classList.toggle('playing', playing);
+  for (const id of ['menu','guide','footer']) $(id).hidden = playing;
+  $('hud').hidden = !playing; $('overlay').hidden = state !== 'paused' && state !== 'finished';
+}
+function start() {
+  keys.clear(); accumulator = 0; race.reset(selected.id); audio.setTrack(selected);
+  state = 'racing'; $('results').replaceChildren(); view(); void unlockAudio();
+}
+function pause() {
+  if (state !== 'racing') return;
+  state = 'paused'; keys.clear(); accumulator = 0;
+  $('overlay-label').textContent = 'TAKE A BREATH'; $('overlay-title').textContent = 'PIT STOP.';
+  $('overlay-text').textContent = '잠시 멈춰도, 레이스는 기다립니다.';
+  $('resume').hidden = false; $('results').replaceChildren(); view();
+}
+function finish() {
+  state = 'finished'; const best = bestTime(), isBest = !best || race.time < best;
+  if (isBest) save(recordKey(), race.time);
+  record(); $('overlay-label').textContent = isBest ? 'NEW COURSE RECORD' : 'RACE COMPLETE';
+  $('overlay-title').textContent = `P${race.place}. FINISH.`;
+  $('overlay-text').textContent = `${selected.name} 완주! 다른 코스에도 도전해 보세요.`;
+  $('resume').hidden = true;
+  $('results').innerHTML = `<p>전체 기록 <b>${formatTime(race.time)}</b></p>${race.lapTimes.map((time,i)=>`<p>LAP ${i+1}<b>${formatTime(time)}</b></p>`).join('')}<p>이 맵 최고 <b>${formatTime(bestTime())}</b></p>`;
+  view();
+}
+$('start').onclick = start; $('restart').onclick = start;
+$('resume').onclick = () => { state = 'racing'; keys.clear(); accumulator = 0; view(); void unlockAudio(); };
+$('home').onclick = () => { state = 'menu'; keys.clear(); selectTrack(selected); view(); };
+$('sound').onclick = async () => { try { await audio.toggle(); audioButton(); } catch { $('sound').textContent = '소리 장치 확인'; } };
+$('sound-test').onclick = async () => { try { await audio.preview(); audioButton(); } catch { $('sound').textContent = '소리 장치 확인'; } };
+document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); $('home').click(); });
+window.addEventListener('keydown', event => {
+  if (state !== 'menu' && GAME_KEYS.has(event.code)) event.preventDefault();
+  keys.add(event.code); if (event.repeat) return;
+  const action = actionForKey(event.code);
+  if (action === 'pause') { if (state === 'racing') pause(); else if (state === 'paused') $('resume').click(); }
+  else if (state === 'racing' && action) race[action]();
+});
+window.addEventListener('keyup', event => keys.delete(event.code));
+window.addEventListener('blur', () => { keys.clear(); pause(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+
+function hud() {
+  $('position').innerHTML = `0${race.place}<span> / 06</span>`;
+  $('lap').innerHTML = `LAP ${Math.min(3,race.lapTimes.length+1)} <span>/ 3</span>`;
+  $('time').textContent = formatTime(race.time);
+  $('speed').textContent = String(Math.round(Math.abs(race.speed)/30)).padStart(3,'0');
+  $('energy').style.width = `${race.energy}%`; $('energy-label').textContent = `페이즈 에너지 ${Math.round(race.energy)}%`;
+  $('drift').style.width = `${race.drift*100}%`; $('phase').textContent = race.flux ? 'FLUX DIMENSION' : 'STREET MODE';
+  $('boost-label').textContent = `CTRL 부스터 × ${race.boosts}`;
+  $('boost-status').textContent = race.speed < 0 ? 'R · REVERSE' : race.boostTime > 0 ? 'OVERDRIVE ACTIVE' : race.flux ? 'PHASE DRIVE' : 'D · ELECTRIC DRIVE';
+  $('message').textContent = race.countdown > 0 ? (race.countdown > .7 ? String(Math.ceil(race.countdown-.7)) : 'GO!') : race.messageTime > 0 ? race.message : '';
+  const ahead = segmentAt(race.distance+3200, race.track).curve;
+  $('corner-hint').hidden = race.countdown > 0 || race.speed < 0;
+  $('corner-hint').innerHTML = Math.abs(ahead) > 1.15 ? `<strong>${ahead > 0 ? '↱' : '↰'}</strong>${Math.abs(ahead)>2.5?'급커브':'코너'} · SHIFT 드리프트` : '<strong>↑</strong> 가속 구간';
+}
+function frame(now) {
+  const dt = Math.max(0,Math.min((now-last)/1000,.05)); last = now;
+  if (state === 'menu') { race.distance += dt*1800; race.time += dt; renderer.draw(race,true); }
+  else {
+    if (state === 'racing') {
+      const input = drivingInput(keys); race.visualSteer = (input.right?1:0)-(input.left?1:0);
+      accumulator += dt;
+      while (accumulator >= 1/60 && !race.finished) { race.update(1/60,input); accumulator -= 1/60; }
+      if (race.finished) finish();
+    }
+    renderer.draw(race); renderer.map($('map'),race); document.body.classList.toggle('flux',race.flux); hud();
   }
-  renderer.draw(race);renderer.map($('map'),race);document.body.classList.toggle('flux',race.flux);
-  $('position').innerHTML=`0${race.place}<span> / 06</span>`;$('lap').innerHTML=`LAP ${Math.min(3,race.lapTimes.length+1)} <span>/ 3</span>`;$('time').textContent=formatTime(race.time);$('speed').textContent=String(Math.round(Math.abs(race.speed)/30)).padStart(3,'0');$('energy').style.width=`${race.energy}%`;$('energy-label').textContent=`페이즈 에너지 ${Math.round(race.energy)}%`;$('drift').style.width=`${race.drift*100}%`;$('phase').textContent=race.flux?'FLUX DIMENSION':'STREET MODE';$('boost-label').textContent=`CTRL 부스터 × ${race.boosts}`;$('boost-status').textContent=race.speed<0?'R · REVERSE':race.boostTime>0?'OVERDRIVE ACTIVE':race.flux?'PHASE DRIVE':'D · ELECTRIC DRIVE';$('message').textContent=race.countdown>0?(race.countdown>.7?String(Math.ceil(race.countdown-.7)):'GO!'):race.messageTime>0?race.message:'';
- }
- audio.update(Math.abs(race.speed),state==='racing'&&race.countdown===0,race.boostTime>0);document.documentElement.dataset.gameReady='true';requestAnimationFrame(frame);
-}view();requestAnimationFrame(frame);
+  audio.update(race,state);
+  document.documentElement.dataset.gameReady = 'true'; requestAnimationFrame(frame);
+}
+view(); requestAnimationFrame(frame);

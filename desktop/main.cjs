@@ -38,10 +38,13 @@ async function createWindow() {
       ready: document.documentElement.dataset.gameReady === 'true',
       title: document.title,
       controls: document.getElementById('guide').textContent,
-      canvasWidth: document.getElementById('world').width
+      canvasWidth: document.getElementById('world').width,
+      courses: document.querySelectorAll('.course').length,
+      selection: document.querySelector('.course[aria-pressed="true"]')?.dataset.track
     })`);
-    const ok = result.ready && result.canvasWidth > 0 && result.controls.includes('CTRL');
-    require('node:fs').writeFileSync(join(app.getPath('temp'), 'neon-apex-smoke.json'), JSON.stringify({ ok, ...result }, null, 2));
+    const sound = await gameWindow.webContents.executeJavaScript(`import('apex://game/desktop/audio-smoke.mjs').then(module => module.verifyAudio())`);
+    const ok = result.ready && result.canvasWidth > 0 && result.controls.includes('CTRL') && result.courses === 5 && Object.values(sound).every(layer => layer.audibleSignal);
+    require('node:fs').writeFileSync(join(app.getPath('temp'), 'neon-apex-smoke.json'), JSON.stringify({ ok, ...result, sound }, null, 2));
     app.exit(ok ? 0 : 1);
   }
 }

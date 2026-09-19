@@ -1,15 +1,16 @@
 {
   "name": "neon-apex",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Neon Apex desktop kart racing",
   "scripts": {
     "start": "electron .",
-    "check": "node --check server.mjs && node --check src/main.js && node --check src/race.js && node --check src/render.js && node --check src/audio.js && node --check src/input.js && node --check src/vehicle.js && node --check desktop/main.cjs && node --check scripts/package.mjs",
+    "check": "node --check server.mjs && node --check src/main.js && node --check src/race.js && node --check src/render.js && node --check src/audio.js && node --check src/input.js && node --check src/vehicle.js && node --check desktop/main.cjs && node --check scripts/package.mjs && node --check src/tracks.js && node --check src/scenery.js",
     "test": "node --test --test-isolation=none tests/race.test.js",
     "start:web": "node server.mjs",
     "build:win": "node scripts/package.mjs",
-    "test:controls": "node --test --test-isolation=none tests/controls.test.js"
+    "test:controls": "node --test --test-isolation=none tests/controls.test.js",
+    "test:content": "node --test --test-isolation=none tests/content.test.js"
   },
   "type": "module",
   "devDependencies": {

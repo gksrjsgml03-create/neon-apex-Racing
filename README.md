@@ -10,6 +10,14 @@ Windows 데스크톱에서 실행하는 카트 레이싱 개발 프로젝트입�
 
 [실행 방법](#실행-방법) · [조작법](#조작법) · [멀티플레이](#멀티플레이) · [개발 구조](#개발-구조) · [변경 이력](CHANGELOG.md) · [서버 운영 안내](ONLINE.md)
 
+## Windows 게임 다운로드
+
+**[V1.5.0 Windows x64 실행 파일 다운로드](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/download/v1.5.0/Neon-Apex-v1.5.0-windows-x64.zip)**
+
+[릴리스 안내와 파일 목록](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/tag/v1.5.0)에서 실행 ZIP을 받으세요. 압축을 모두 푼 다음 `Neon Apex-win32-x64/NeonApex.exe`를 실행하면 됩니다. Node.js 설치나 직접 빌드가 필요 없습니다. GitHub가 별도로 표시하는 **Source code (zip)**은 실행 프로그램이 아닙니다.
+
+같은 공유기에 연결된 PC와 노트북은 **방 열기 → 초대 복사 → 참가 → 준비 → 출발**로 함께 플레이할 수 있습니다. 공개 서버는 아직 운영하지 않으므로 다른 장소의 인터넷에서는 별도 서버 또는 포트 연결 설정이 필요합니다. [동봉된 실행·접속 안내](docs/PLAY_WINDOWS.ko.txt)
+
 ## 프로젝트 소개
 
 아케이드 카트 레이싱의 드리프트와 속도감을 바탕으로, **페이즈 전환을 언제 사용할지 선택하는 주행**을 더했습니다. 부스터를 모아 직선에서 사용하거나, 에너지를 소모하는 다른 주행 모드로 전환하는 전략을 실험합니다.

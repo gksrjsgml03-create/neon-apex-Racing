@@ -27,6 +27,8 @@ export class Race {
   const edge=this.track.width*(this.flux?.81:1);
   if(Math.abs(this.x)>edge){this.speed=clamp(this.speed*Math.max(0,1-dt*2.4),-1800,1800);this.energy=Math.max(0,this.energy-dt*4);}
   this.x=clamp(this.x,-1.55,1.55);
+  const rail=this.track.width-.10;
+  if(Math.abs(this.x)>rail){this.x=clamp(this.x,-rail,rail);if(this.collideTimer===0){this.speed*=.72;this.collideTimer=.4;this.say('가드레일 접촉');}}
   if(this.speed>0&&this.flux&&segmentAt(this.distance,this.track).fluxZone&&Math.abs(this.x)<.35)this.speed=Math.min(max+1000,this.speed+dt*3800);
   const previousDistance=this.distance;
   this.distance+=this.speed*dt;

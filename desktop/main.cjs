@@ -40,10 +40,14 @@ async function createWindow() {
       controls: document.getElementById('guide').textContent,
       canvasWidth: document.getElementById('world').width,
       courses: document.querySelectorAll('.course').length,
-      selection: document.querySelector('.course[aria-pressed="true"]')?.dataset.track
+      selection: document.querySelector('.course[aria-pressed="true"]')?.dataset.track,
+      renderer: document.documentElement.dataset.renderer,
+      characters: document.querySelectorAll('[data-character]').length,
+      karts: document.querySelectorAll('[data-kart]').length,
+      graphicsError: document.getElementById('world').getContext('webgl2')?.getError()
     })`);
-    const sound = await gameWindow.webContents.executeJavaScript(`import('apex://game/desktop/audio-smoke.mjs').then(module => module.verifyAudio())`);
-    const ok = result.ready && result.canvasWidth > 0 && result.controls.includes('CTRL') && result.courses === 5 && Object.values(sound).every(layer => layer.audibleSignal);
+    const sound = process.argv.includes('--audio-check') ? await gameWindow.webContents.executeJavaScript(`import('apex://game/desktop/audio-smoke.mjs').then(module => module.verifyAudio())`) : null;
+    const ok = result.ready && result.canvasWidth > 0 && result.controls.includes('CTRL') && result.courses === 5 && result.renderer === 'webgl-3d' && result.characters === 6 && result.karts === 5 && result.graphicsError === 0 && (!sound || Object.values(sound).every(layer => layer.audibleSignal));
     require('node:fs').writeFileSync(join(app.getPath('temp'), 'neon-apex-smoke.json'), JSON.stringify({ ok, ...result, sound }, null, 2));
     app.exit(ok ? 0 : 1);
   }

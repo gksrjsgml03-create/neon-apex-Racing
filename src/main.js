@@ -1,6 +1,7 @@
 import { Race, formatTime } from './race.js';
 import { TRACKS, getTrack, routePath, segmentAt } from './tracks.js';
-import { Renderer } from './render.js';
+import { Renderer } from './three/renderer.js';
+import { CHARACTERS, KARTS } from './three/models.js';
 import { background, landmark } from './scenery.js';
 import { AudioEngine } from './audio.js';
 import { drivingInput, actionForKey, GAME_KEYS } from './input.js';
@@ -9,9 +10,29 @@ const $ = id => document.getElementById(id);
 const read = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
 const save = (key, value) => { try { localStorage.setItem(key, String(value)); } catch {} };
 let selected = getTrack(read('neon-apex-track', 'coast'));
-const race = new Race(selected.id), renderer = new Renderer($('world')), audio = new AudioEngine(), keys = new Set();
+const race = new Race(selected.id), audio = new AudioEngine(), keys = new Set();
+let renderer;
+try { renderer = new Renderer($('world')); }
+catch (error) {
+  const message=document.createElement('div');message.className='graphics-error';message.textContent='3D 그래픽을 시작하지 못했습니다. 그래픽 드라이버를 확인한 뒤 게임을 다시 실행해 주세요.';document.body.append(message);throw error;
+}
+let characterId=read('neon-apex-character','ace'),kartId=read('neon-apex-kart','bolt');
+if(!CHARACTERS.some(c=>c.id===characterId))characterId='ace';
+if(!KARTS.some(k=>k.id===kartId))kartId='bolt';
+function appearance(){
+  renderer.setAppearance(characterId,kartId);save('neon-apex-character',characterId);save('neon-apex-kart',kartId);
+  document.querySelectorAll('[data-character]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.character===characterId)));
+  document.querySelectorAll('[data-kart]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.kart===kartId)));
+}
+for(const [index,character] of CHARACTERS.entries()){
+  const button=document.createElement('button');button.className='character-choice';button.dataset.character=character.id;button.style.setProperty('--swatch',character.color);button.setAttribute('aria-label',`캐릭터 ${character.name}`);
+  button.innerHTML=`<img src="${renderer.portrait(character.id)}" alt=""><small>${character.name}</small>`;
+  button.onclick=()=>{characterId=character.id;appearance();};$('characters').append(button);
+}
+for(const kart of KARTS){const button=document.createElement('button');button.className='kart-choice';button.dataset.kart=kart.id;button.style.setProperty('--swatch',kart.color);button.innerHTML=`<img src="${renderer.portrait(kart.id,true)}" alt=""><small>${kart.name}</small>`;button.setAttribute('aria-label',`카트 ${kart.name}`);button.onclick=()=>{kartId=kart.id;appearance();};$('karts').append(button);}
+appearance();
 let state = 'menu', last = performance.now(), accumulator = 0;
-const recordKey = () => `neon-apex-v12-best-${selected.id}`;
+const recordKey = () => `neon-apex-v13-best-${selected.id}`;
 const bestTime = () => { const value = Number(read(recordKey(), '0')); return Number.isFinite(value) && value > 0 ? value : null; };
 
 function audioButton() {
@@ -34,8 +55,8 @@ volumes();
 function record() { const best = bestTime(); $('record').textContent = best ? `이 맵 최고 기록 ${formatTime(best)}` : '이 맵의 첫 기록에 도전하세요'; }
 function selectTrack(track) {
   selected = track; save('neon-apex-track', track.id); race.reset(track.id);
-  race.distance = track.length * .16;
-  document.body.classList.remove('flux'); document.documentElement.style.setProperty('--lime', track.theme.accent);
+  race.distance = 700;
+  document.body.classList.remove('flux');
   document.querySelectorAll('.course').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.track === track.id)));
   $('selected-level').textContent = `STAGE 0${track.level} / ${track.difficulty}`;
   $('selected-name').textContent = track.name;
@@ -92,6 +113,7 @@ document.querySelector('.brand').addEventListener('click', event => { event.prev
 window.addEventListener('keydown', event => {
   if (state !== 'menu' && GAME_KEYS.has(event.code)) event.preventDefault();
   keys.add(event.code); if (event.repeat) return;
+  if(event.code==='KeyC'&&state==='racing'){renderer.toggleCamera();race.say('카메라 시점 변경');return;}
   const action = actionForKey(event.code);
   if (action === 'pause') { if (state === 'racing') pause(); else if (state === 'paused') $('resume').click(); }
   else if (state === 'racing' && action) race[action]();

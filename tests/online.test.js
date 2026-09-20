@@ -75,3 +75,14 @@ test('two real WebSocket clients join, race, receive matching server snapshots a
   b.socket.close();await a.wait('room',m=>m.room.members.length===1);
  }finally{a?.socket.terminate();b?.socket.terminate();await server.close();}
 });
+
+test('guest can continue in the same room and start a second round without invites',()=>{
+ const {server,players,room}=party();const code=room.code;
+ server.handle(players[1],{type:'ready',ready:true});server.handle(players[0],{type:'start'});
+ server.handle(players[1],{type:'return'});assert.equal(room.phase,'racing');
+ for(const p of room.racers)p.race.finished=true;server.update();assert.equal(room.phase,'results');
+ server.handle(players[1],{type:'return'});assert.equal(room.phase,'lobby');assert.equal(room.code,code);assert.equal(room.members.length,2);
+ assert(players.every(p=>p.room===room));assert.equal(players[1].ready,false);
+ server.handle(players[1],{type:'ready',ready:true});server.handle(players[0],{type:'return'});assert.equal(players[1].ready,true);
+ server.handle(players[0],{type:'start'});assert.equal(room.round,2);assert.equal(room.phase,'racing');
+});

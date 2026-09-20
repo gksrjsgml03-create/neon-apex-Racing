@@ -1,4 +1,4 @@
-NEON APEX Racing V1.6.0 — Windows 실행 안내
+NEON APEX Racing V1.6.1 — Windows 실행 안내
 
 1. 다운로드한 ZIP을 우클릭하고 '압축 풀기'로 폴더 전체를 꺼내세요.
 2. Neon Apex-win32-x64 폴더의 NeonApex.exe를 실행하세요.
@@ -54,3 +54,5 @@ https://github.com/gksrjsgml03-create/neon-apex-Racing
 
 다운로드
 https://github.com/gksrjsgml03-create/neon-apex-Racing/releases
+
+V1.6.1: 완주하면 주행 효과음이 멈춥니다. 경기 종료 후 누구나 '계속하기 · 같은 방으로'를 누르면 모두 같은 대기실로 돌아갑니다. 초대 코드를 다시 입력할 필요 없습니다. 참가자는 다시 준비하고 방장이 시작하세요.

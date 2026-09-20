@@ -4,7 +4,7 @@
 
 Windows 데스크톱에서 실행하는 카트 레이싱 개발 프로젝트입니다. 5개 테마 코스에서 AI와 기록에 도전하거나, 초대로 모인 2~8명의 플레이어가 같은 방에서 실시간으로 경주합니다.
 
-> 현재 게임 버전: **V1.6.0 · Online Edition**
+> 현재 게임 버전: **V1.6.1 · Online Edition**
 >
 > 상태: **개발 중인 프로토타입** · Windows x64 · 실제 3D 렌더링 · 싱글플레이 / 멀티플레이
 
@@ -12,9 +12,9 @@ Windows 데스크톱에서 실행하는 카트 레이싱 개발 프로젝트입�
 
 ## Windows 게임 다운로드
 
-**[V1.6.0 Windows x64 실행 파일 다운로드](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/download/v1.6.0/Neon-Apex-v1.6.0-windows-x64.zip)**
+**[V1.6.1 Windows x64 실행 파일 다운로드](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/download/v1.6.1/Neon-Apex-v1.6.1-windows-x64.zip)**
 
-[릴리스 안내와 파일 목록](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/tag/v1.6.0)에서 실행 ZIP을 받으세요. 압축을 모두 푼 다음 `Neon Apex-win32-x64/NeonApex.exe`를 실행하면 됩니다. Node.js 설치나 직접 빌드가 필요 없습니다. GitHub가 별도로 표시하는 **Source code (zip)**은 실행 프로그램이 아닙니다.
+[릴리스 안내와 파일 목록](https://github.com/gksrjsgml03-create/neon-apex-Racing/releases/tag/v1.6.1)에서 실행 ZIP을 받으세요. 압축을 모두 푼 다음 `Neon Apex-win32-x64/NeonApex.exe`를 실행하면 됩니다. Node.js 설치나 직접 빌드가 필요 없습니다. GitHub가 별도로 표시하는 **Source code (zip)**은 실행 프로그램이 아닙니다.
 
 같은 공유기에 연결된 PC와 노트북은 **방 열기 → 초대 복사 → 참가 → 준비 → 출발**로 함께 플레이할 수 있습니다. 다른 집에서는 **인터넷 친구와 방 만들기**를 사용하세요. 무료 임시 서버는 운영자 PC가 켜져 있을 때 이용 가능합니다. [인터넷 체험 안내](PUBLIC_SERVER.md) [동봉된 실행·접속 안내](docs/PLAY_WINDOWS.ko.txt)
 
@@ -208,7 +208,7 @@ Electron 설치 스크립트가 차단되어 실행 엔진이 없을 때만 다�
 | 서버 계산·전송 | 60Hz 주행 계산 / 20Hz 상태 전송 |
 | 패키징 | @electron/packager |
 | 서버 배포 구성 | Dockerfile / Docker Compose |
-| 버전 관리 | Git 커밋 및 v1.0.0~v1.6.0 태그 |
+| 버전 관리 | Git 커밋 및 v1.0.0~v1.6.1 태그 |
 
 ## 개발 구조
 
@@ -290,3 +290,32 @@ Electron 설치 스크립트가 차단되어 실행 엔진이 없을 때만 다�
 이 저장소는 개발 내용과 소스를 공개하기 위해 만들었습니다. **프로젝트 자체에는 현재 오픈소스 라이선스를 지정하지 않았습니다.** 라이선스가 지정된 것으로 가정하여 재배포하거나 상업적으로 재사용하지 마세요. 사용 허용 범위는 저장소 소유자와 별도로 확인해야 합니다.
 
 사용하는 외부 라이브러리는 각자의 라이선스를 따릅니다. [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 참고하고, 실행 파일을 배포할 때 포함된 라이선스 파일을 유지하세요.
+
+## 서버와 게임의 역할 — 쉽게 이해하기
+
+현재 무료 체험에서는 운영자 PC가 경기 진행자이자 심판입니다. 각 게임(클라이언트)은 위치를 직접 정해서 보내는 대신 가속·조향·드리프트 입력을 서버에 보냅니다. 서버가 위치·속도·충돌·랩·순위·완주를 계산하고 참가자들에게 결과를 전달합니다. 각 게임은 이 결과를 화면과 소리로 표현하며, 상대 위치 사이를 보간해 움직임을 부드럽게 보여줍니다.
+
+`운전자 입력 → 서버의 경기 계산 → 참가자 모두에게 결과 전송 → 각 게임에서 화면 표시`
+
+서버 관리 파일은 `scripts/public-demo.ps1`입니다. 프로젝트 폴더의 PowerShell에서 아래 명령을 사용합니다. 실행 제한 우회는 해당 PowerShell 실행에만 적용됩니다.
+
+```powershell
+# 시작: 게임 서버와 임시 인터넷 연결 통로를 백그라운드에서 실행
+powershell -ExecutionPolicy Bypass -File .\scripts\public-demo.ps1 -Action Start
+# 확인: 실행 중인지 확인하며 상태는 변경하지 않음
+powershell -ExecutionPolicy Bypass -File .\scripts\public-demo.ps1 -Action Status
+# 종료: 서버와 연결 통로를 종료. 방과 진행 중인 경기도 사라짐
+powershell -ExecutionPolicy Bypass -File .\scripts\public-demo.ps1 -Action Stop
+```
+
+Cloudflare 터널은 외부 친구가 운영자 PC의 서버에 접근하는 통로입니다. 게임 서버가 클라우드로 옮겨가는 것은 아닙니다. PC 종료·절전 시 접속이 끊기고, 재부팅 후에는 Start를 다시 실행해야 합니다. PowerShell 창과 게임 창을 닫아도 별도로 실행한 서버는 계속 실행됩니다. 친구들은 서버를 켤 필요가 없습니다.
+
+재시작 후 임시 주소는 다음 명령으로 확인합니다.
+
+```powershell
+Select-String -Path .\.runtime\tunnel.err.log -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com'
+```
+
+출력된 새 HTTPS 주소를 게임의 **게임 서버 주소**에 입력하고 **입력한 서버에 방 만들기**를 누르세요. 새 초대 정보를 친구에게 전달하면 됩니다. 기본 인터넷 방 버튼의 주소 갱신과 호스팅 설명은 [PUBLIC_SERVER.md](PUBLIC_SERVER.md)를 참고하세요.
+
+경기 종료 후에는 **방장과 참가자 누구나 ‘계속하기 · 같은 방으로’**를 누를 수 있습니다. 누군가 선택하면 연결 중인 모두가 같은 대기실로 돌아가며 방 코드와 참가자는 유지됩니다. 참가자가 다시 준비하고 방장이 맵을 선택·시작합니다. ‘방에서 나가기’는 실제로 방을 떠날 때만 사용하세요. 개인 완주 후에는 주행·드리프트·부스터 효과음을 멈추고 배경음악은 유지합니다.

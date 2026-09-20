@@ -64,3 +64,5 @@ docker compose up -d --build
 공개 호스팅, 서로 다른 가정의 인터넷 환경, WAN 지연 부하 테스트는 서버가 개설된 뒤 별도 확인이 필요합니다.
 
 구현 참고 문서: [ws](https://github.com/websockets/ws), [Electron WebPreferences](https://www.electronjs.org/docs/latest/api/structures/web-preferences).
+
+V1.6.1: 완주 후 주행 효과음을 중지합니다. 경기 결과에서 누구나 계속하기를 누르면 모두 같은 방으로 돌아갑니다. 다시 초대할 필요 없이 준비 후 다음 경기를 시작하세요. 서버는 조작 입력으로 차량 위치와 경기 결과를 계산하고, 게임은 전달받은 정보를 부드럽게 화면에 표시합니다.

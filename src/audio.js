@@ -153,7 +153,7 @@ export class AudioEngine {
 
   update(race, state) {
     if (!this.ctx) return;
-    const now = this.ctx.currentTime, active = state === 'racing', driving = active && race.countdown === 0 && !race.overturned;
+    const now = this.ctx.currentTime, active = state === 'racing' && !race.finished, driving = active && race.countdown === 0 && !race.overturned;
     const speed = Math.abs(race.speed), ratio = Math.min(1, speed / 6500), boost = race.boostTime > 0;
     this.musicActive = true;
     this.master.gain.setTargetAtTime(this.enabled ? .7 : 0, now, .04);

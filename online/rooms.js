@@ -61,7 +61,8 @@ export class Rooms {
         this.start(room);return;
       }
       if(msg.type==='return'){
-        if(p.id!==room.host||room.phase!=='results')fail('경기 종료 후 방장이 대기실로 돌아갈 수 있습니다.');
+        if(room.phase==='lobby')return;
+        if(room.phase!=='results')fail('경기가 모두 종료된 후 계속할 수 있습니다.');
         room.phase='lobby';room.racers=[];for(const id of room.members)this.clients.get(id).ready=id===room.host;this.publish(room);
       }
     }catch(error){this.reply(p,'error',{message:error.message});}

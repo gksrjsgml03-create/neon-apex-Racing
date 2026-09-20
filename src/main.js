@@ -90,7 +90,7 @@ function view() {
   $('hud').hidden = !playing; $('overlay').hidden = state !== 'paused' && state !== 'finished';
   $('net-hud').hidden=mode!=='multi';$('online-ranking').hidden=mode!=='multi';
   if(mode!=='multi')$('online-progress').hidden=true;
-  $('restart').hidden=mode==='multi';$('return-lobby').hidden=!(mode==='multi'&&state==='finished'&&online?.client.room?.phase==='results'&&online.client.room.host===online.client.id);
+  $('restart').hidden=mode==='multi';$('return-lobby').hidden=!(mode==='multi'&&state==='finished'&&online?.client.room?.phase==='results');
   $('home').textContent=mode==='multi'?'방에서 나가기':'모드 선택으로';
 }
 function start() {
@@ -191,7 +191,7 @@ function showConnect(){
 }
 function onlineResults(){
   state='finished';keys.clear();$('resume').hidden=true;$('overlay-label').textContent='RACE TOGETHER';$('overlay-title').textContent='RACE FINISHED';
-  $('overlay-text').textContent=online.client.room?.host===online.client.id?'대기실로 돌아가 다음 맵을 선택할 수 있습니다.':'방장이 대기실로 돌아가면 다음 경기를 준비합니다.';
+  $('overlay-text').textContent='계속하기를 누르면 모두 같은 대기실로 돌아갑니다. 초대 코드를 다시 입력할 필요가 없습니다.';
   $('results').replaceChildren();
   for(const player of [...latestPlayers].sort((a,b)=>a.state.place-b.state.place)){
     const row=document.createElement('p'),name=document.createElement('span'),time=document.createElement('b');
